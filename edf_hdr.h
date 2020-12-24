@@ -17,14 +17,14 @@
 
 // This code enables to modify the first 184 bytes, which do not interfere with the signals data
 
-typedef struct patientData{    // Max 80 characters
+typedef struct patientData {    // Max 80 characters
   char localCode[60];  //- the code by which the patient is known in the hospital administration.
   char sex[2];         //- sex (English, so F or M).
   char bday[12];       //- birthdate in dd-MMM-yyyy format using the English 3-character abbreviations of the month in capitals. 02-AUG-1951 is OK, while 2-AUG-1951 is not.
   char name[60];       //- the patients name.
 } PatientData; // X X X X is valid
 
-typedef struct recordingData{  // Max 80 characters
+typedef struct recordingData {  // Max 80 characters
   char startText[10];  //- The text 'Startdate'.
   char startDate[12];  //- The startdate itself in dd-MMM-yyyy format using the English 3-character abbreviations of the month in capitals.
   char adminCode[60];  //- The hospital administration code of the investigation, i.e. EEG number or PSG number.

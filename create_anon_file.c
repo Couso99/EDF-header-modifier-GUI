@@ -3,8 +3,9 @@
 #include <string.h>
 #include "edf_hdr.h"
 
-typedef struct localCodes
-{
+/* Author: Pablo Couso */
+
+typedef struct localCodes {
   char original[60];
   char transformed[60];
 } LocalCodes;
@@ -122,17 +123,14 @@ int main(int argc, char const *argv[])
 {
   int i, n, boolRealloc, rows, skip;
   static char buf[1024];
-  char start_date[9], start_time[9];
   PatientData p_data;
-  RecordingData r_data;
   LocalCodes *both_codes_data;
+
+  char code_transformation_file[] = "RESULTS/relacion_codigos_sujetos.csv";
 
   // Depends on csv and number of lines
   rows=50; // Must be above actual number of lines in csv
   skip=1;  // Number of header rows in csv
-
-  char empty_recording_data[] = "Startdate X X X X"; // Empty local recording data
-  char code_transformation_file[] = "RESULTS/relacion_codigos_sujetos.csv";
 
   init_both_codes_data(&both_codes_data, code_transformation_file, &rows, skip);
 
@@ -156,12 +154,10 @@ int main(int argc, char const *argv[])
   strcpy(p_data.sex, "X"); // Anonymize sex
   strcpy(p_data.name,"X"); // Anonymize name
 
-  str2recordingData(&r_data, empty_recording_data); // Anonymize whole recording data info
-
   /* -------------------------------------------------- */
 
   // Write header to buf (char[1024])
-  modify_header(buf, &p_data, &r_data, NULL, NULL);
+  modify_header(buf, &p_data, NULL, NULL, NULL);
   // Write new file with modified header
   write_to_file(buf, ofile_path, ifile_path, n);
 

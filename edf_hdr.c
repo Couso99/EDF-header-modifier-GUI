@@ -60,7 +60,16 @@ void str2recordingData(RecordingData* data,const char*string)
 
 void patientData2str(char* str, const PatientData *data)
 {
-  int j=0;
+  int j;
+
+  if (!data)
+  {
+    char empty_data[] = "X X X X";
+    for (j=0; empty_data[j]; j++)
+      str[j] = empty_data[j];
+    return;
+  }
+
   for (j=0; data->localCode[j] && data->localCode[j]!=' ';j++)
     str[j] = data->localCode[j];
 
@@ -90,9 +99,17 @@ void patientData2str(char* str, const PatientData *data)
 void recordingData2str(char *str, const RecordingData *data)
 {
   int i, j, k;
+
+  if (!data)
+  {
+    char empty_data[] = "Startdate X X X X";
+    for (j=0; empty_data[j]; j++)
+      str[j] = empty_data[j];
+    return;
+  }
+
   for (j=0; data->startText[j] && data->startText[j]!=' ';j++)
     str[j] = data->startText[j];
-
   for (i=1;i<5;i++)
   {
     str[j] = ' ';
