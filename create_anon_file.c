@@ -75,23 +75,21 @@ int get_transformed_code(char *transformed_localCode, const char *original_local
 }
 
 // Change original code to  transformed
-int modify_patient_code(char *localCode, LocalCodes *data, char *fname, int *rows)
+int modify_patient_code(char *localCode, LocalCodes *data, char *fname, int rows)
 {
-  int i, j, k, retval, boolRealloc, rows_local;
+  int i, j, k, retval, boolRealloc;
   char original_localCode[60], transformed_localCode[60];
 
   strcpy(original_localCode, localCode);
   boolRealloc = 0;
-  rows_local = *rows;
 
-  retval = get_transformed_code(transformed_localCode, original_localCode, data, rows_local);
+  retval = get_transformed_code(transformed_localCode, original_localCode, data, rows);
   if (!retval)
   {
     append_to_csv(original_localCode, transformed_localCode, fname);
-    strcpy(data[rows_local].original, original_localCode);
-    strcpy(data[rows_local].transformed, transformed_localCode);
+    strcpy(data[rows].original, original_localCode);
+    strcpy(data[rows].transformed, transformed_localCode);
     boolRealloc = 1;
-    (*rows)++;
   }
 
   strcpy(localCode, transformed_localCode);
@@ -109,14 +107,25 @@ void modify_patient_bday(char *bday)
 
 }
 
-// Initialize data and load it from .csv to data
-void init_both_codes_data(LocalCodes **data, char *fname, int *rows, int skip)
+int count_file_rows(char *fname)
 {
-  (*data) = (LocalCodes *) malloc(*rows * sizeof(LocalCodes));
-  *rows = read_csv((*data), fname, skip);
-  (*data) = (LocalCodes *) realloc((*data),((*rows)+1)*sizeof(LocalCodes));
-  printf("Rows: %d\n", *rows);
-  return;
+  int ch, number_of_lines = 0;
+  FILE *ifile = fopen(fname, "r");
+  while (EOF != (ch=getc(ifile)))
+      if ('\n' == ch) ++number_of_lines;
+  fclose(ifile);
+  return number_of_lines;
+}
+
+// Initialize data and load it from .csv to data, returns number of data rows
+int init_both_codes_data(LocalCodes **data, char *fname, int skip)
+{
+  int rows;
+  rows = count_file_rows(fname); //Includes the header rows
+  (*data) = (LocalCodes *) malloc((rows+1-skip) * sizeof(LocalCodes));
+  rows = read_csv((*data), fname, skip); // Corrects number of rows
+  printf("Rows: %d\n", rows);
+  return rows;
 }
 
 int main(int argc, char const *argv[])
@@ -126,13 +135,11 @@ int main(int argc, char const *argv[])
   PatientData p_data;
   LocalCodes *both_codes_data;
 
+  // Depends on csv
   char code_transformation_file[] = "RESULTS/relacion_codigos_sujetos.csv";
-
-  // Depends on csv and number of lines
-  rows=50; // Must be above actual number of lines in csv
   skip=1;  // Number of header rows in csv
 
-  init_both_codes_data(&both_codes_data, code_transformation_file, &rows, skip);
+  rows = init_both_codes_data(&both_codes_data, code_transformation_file, skip);
 
   char *ifile_path = (char *) malloc(strlen(argv[1])+1);
   char *ofile_path = (char *) malloc(strlen(argv[2])+1);
@@ -146,8 +153,8 @@ int main(int argc, char const *argv[])
   /* -------------------------------------------------- */
 
     // Method to modify name according to .csv
-  boolRealloc = modify_patient_code(p_data.localCode, both_codes_data, code_transformation_file, &rows);
-  if (boolRealloc) both_codes_data = (LocalCodes *) realloc(both_codes_data, rows+1);
+  boolRealloc = modify_patient_code(p_data.localCode, both_codes_data, code_transformation_file, rows);
+  if (boolRealloc) {both_codes_data = (LocalCodes *) realloc(both_codes_data, rows+1); rows++;}
 
   modify_patient_bday(p_data.bday); // Modify birthday date to keep year and change day and month
 
