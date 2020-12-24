@@ -111,6 +111,8 @@ int count_file_rows(char *fname)
 {
   int ch, number_of_lines = 0;
   FILE *ifile = fopen(fname, "r");
+  if (!ifile)
+    return 0;
   while (EOF != (ch=getc(ifile)))
       if ('\n' == ch) ++number_of_lines;
   fclose(ifile);
@@ -134,6 +136,9 @@ int main(int argc, char const *argv[])
   static char buf[1024];
   PatientData p_data;
   LocalCodes *both_codes_data;
+  char string_date[9], string_time[9];
+  char ofile_path[38];
+  char *ifile_path = (char*)malloc(100*sizeof(char));
 
   // Depends on csv
   char code_transformation_file[] = "RESULTS/relacion_codigos_sujetos.csv";
@@ -141,35 +146,37 @@ int main(int argc, char const *argv[])
 
   rows = init_both_codes_data(&both_codes_data, code_transformation_file, skip);
 
-  char *ifile_path = (char *) malloc(strlen(argv[1])+1);
-  char *ofile_path = (char *) malloc(strlen(argv[2])+1);
-  strcpy(ifile_path, argv[1]);
-  strcpy(ofile_path, argv[2]);
+  for (i=1;i<argc;i++) {
+    ifile_path = (char *) realloc(ifile_path, strlen(argv[i])+1);
+    strcpy(ifile_path, argv[i]);
 
-  n = get_header(buf, ifile_path);
-  process_header(&p_data, NULL, NULL, NULL, buf);
+    n = get_header(buf, ifile_path);
+    process_header(&p_data, NULL, string_date, string_time, buf);
 
-  /* Modify here p_data, r_data, start_date, start_time */
-  /* -------------------------------------------------- */
+    /* Modify here p_data, r_data, start_date, start_time */
+    /* -------------------------------------------------- */
 
-    // Method to modify name according to .csv
-  boolRealloc = modify_patient_code(p_data.localCode, both_codes_data, code_transformation_file, rows);
-  if (boolRealloc) {both_codes_data = (LocalCodes *) realloc(both_codes_data, rows+1); rows++;}
+      // Method to modify name according to .csv
+    boolRealloc = modify_patient_code(p_data.localCode, both_codes_data, code_transformation_file, rows);
+    if (boolRealloc) {both_codes_data = (LocalCodes *) realloc(both_codes_data, rows+1); rows++;}
 
-  modify_patient_bday(p_data.bday); // Modify birthday date to keep year and change day and month
+    modify_patient_bday(p_data.bday); // Modify birthday date to keep year and change day and month
 
-  strcpy(p_data.sex, "X"); // Anonymize sex
-  strcpy(p_data.name,"X"); // Anonymize name
+    strcpy(p_data.sex, "X"); // Anonymize sex
+    strcpy(p_data.name,"X"); // Anonymize name
 
-  /* -------------------------------------------------- */
+    /* -------------------------------------------------- */
 
-  // Write header to buf (char[1024])
-  modify_header(buf, &p_data, NULL, NULL, NULL);
-  // Write new file with modified header
-  write_to_file(buf, ofile_path, ifile_path, n);
+    // Write header to buf (char[1024])
+    modify_header(buf, &p_data, NULL, NULL, NULL);
 
+    // Establish new file as SUJXXXX_dd.mm.yy_hh.mm.ss.edf
+    sprintf(ofile_path, "RESULTS/%s_%s_%s.edf", p_data.localCode, string_date, string_time);
+
+    // Write new file with modified header
+    write_to_file(buf, ofile_path, ifile_path, n);
+  }
   free(ifile_path);
-  free(ofile_path);
   free(both_codes_data);
 
   return 0;

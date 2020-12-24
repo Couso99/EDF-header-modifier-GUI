@@ -67,6 +67,7 @@ void patientData2str(char* str, const PatientData *data)
     char empty_data[] = "X X X X";
     for (j=0; empty_data[j]; j++)
       str[j] = empty_data[j];
+    str[j] = '\0';
     return;
   }
 
@@ -105,6 +106,7 @@ void recordingData2str(char *str, const RecordingData *data)
     char empty_data[] = "Startdate X X X X";
     for (j=0; empty_data[j]; j++)
       str[j] = empty_data[j];
+    str[j] = '\0';
     return;
   }
 
@@ -176,6 +178,7 @@ void dateLetter2dateNumber(char *date_number,const char *date_letter)
           date_number[j] = tok[k];
         break;
     }
+  date_number[j] = '\0';
   return;
 }
 
