@@ -137,11 +137,13 @@ int main(int argc, char const *argv[])
   PatientData p_data;
   LocalCodes *both_codes_data;
   char string_date[9], string_time[9];
-  char ofile_path[38];
+  char ofile_path[60];
   char *ifile_path = (char*)malloc(100*sizeof(char));
 
+  char output_dir[] = "RESULTS";
   // Depends on csv
-  char code_transformation_file[] = "RESULTS/relacion_codigos_sujetos.csv";
+  char code_transformation_file[60];
+  sprintf(code_transformation_file, "%s/relacion_codigos_sujetos.csv", output_dir);
   skip=1;  // Number of header rows in csv
 
   rows = init_both_codes_data(&both_codes_data, code_transformation_file, skip);
@@ -156,7 +158,7 @@ int main(int argc, char const *argv[])
     /* Modify here p_data, r_data, start_date, start_time */
     /* -------------------------------------------------- */
 
-      // Method to modify name according to .csv
+      // Modify name according to .csv
     boolRealloc = modify_patient_code(p_data.localCode, both_codes_data, code_transformation_file, rows);
     if (boolRealloc) {both_codes_data = (LocalCodes *) realloc(both_codes_data, rows+1); rows++;}
 
@@ -164,14 +166,13 @@ int main(int argc, char const *argv[])
 
     strcpy(p_data.sex, "X"); // Anonymize sex
     strcpy(p_data.name,"X"); // Anonymize name
-
     /* -------------------------------------------------- */
 
     // Write header to buf (char[1024])
     modify_header(buf, &p_data, NULL, NULL, NULL);
 
     // Establish new file as SUJXXXX_dd.mm.yy_hh.mm.ss.edf
-    sprintf(ofile_path, "RESULTS/%s_%s_%s.edf", p_data.localCode, string_date, string_time);
+    sprintf(ofile_path, "%s/%s_%s_%s.edf", output_dir, p_data.localCode, string_date, string_time);
 
     // Write new file with modified header
     write_to_file(buf, ofile_path, ifile_path, n);

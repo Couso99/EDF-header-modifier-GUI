@@ -3,6 +3,8 @@
 #include <string.h>
 #include "edf_hdr.h"
 
+/* Author: Pablo Couso */
+
 void str2patientData(PatientData* data,const char*string)
 {
   int i=0;
@@ -236,8 +238,8 @@ void modify_header(char *buf, PatientData *p_data, RecordingData *r_data, char* 
 
   // Check the format and warn if the reserved area is not empty.
   i = 5;
-  if (strncmp("EDF+C", buf+192, 5) == 0) fprintf(stderr, "Format: EDF+C\n");
-  else if (strncmp("EDF+D", buf+192, 5) == 0) fprintf(stderr, "Format: EDF+D\n");
+  if (strncmp("EDF+C", buf+192, 5) == 0) fprintf(stderr, "Format: EDF+, continuous recording\n");
+  else if (strncmp("EDF+D", buf+192, 5) == 0) fprintf(stderr, "Format: EDF+, discontinuous recording\n");
   else {
     fprintf(stderr, "Format: EDF\n");
     i = 0;
@@ -246,11 +248,11 @@ void modify_header(char *buf, PatientData *p_data, RecordingData *r_data, char* 
   for ( ; i < 44; i++) {
     if (buf[i+192] != ' ') {
       fprintf(stderr, "WARNING\n Reserved area of header is not empty as expected\n"
-	    " Check for possible PHI in bytes %d-236 of intput file\n", i+192);
+	    " Check bytes %d-236 of intput file\n", i+192);
       break;
     }
   }
-  puts("Header succesfully modified");
+  puts("Header successfully modified");
   return;
 }
 
@@ -276,6 +278,6 @@ void write_to_file(char *buf, const char *ofile_path, const char *ifile_path, in
 
   fclose(ofile);
   fclose(ifile);
-  printf("Succesfully written to file %s\n", ofile_path);
+  printf("Successfully written to file %s\n", ofile_path);
   return;
 }
