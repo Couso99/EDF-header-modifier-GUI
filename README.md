@@ -3,6 +3,9 @@
 
 
 To compile:
-  % qmake EDF_HEADER.pro
-  % qmake
-  % make 
+
+   % qmake EDF_HEADER.pro
+  
+   % qmake
+  
+   % make 
