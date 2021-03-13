@@ -1,19 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "edf_hdr.h"
+#include "create_anon_file.h"
 
 /* Author: Pablo Couso */
-
-typedef struct localCodes {
-  char original[60];
-  char transformed[60];
-} LocalCodes;
 
 // Load data from .csv to data
 int read_csv(LocalCodes *data, char *fname, int skip)
 {
-  int i, j, k;
+  int i, j;
   char line[1024];
   const char* tok;
   FILE *file;
@@ -77,7 +69,7 @@ int get_transformed_code(char *transformed_localCode, const char *original_local
 // Change original code to  transformed
 int modify_patient_code(char *localCode, LocalCodes *data, char *fname, int rows)
 {
-  int i, j, k, retval, boolRealloc;
+  int retval, boolRealloc;
   char original_localCode[60], transformed_localCode[60];
 
   strcpy(original_localCode, localCode);
@@ -124,15 +116,15 @@ int init_both_codes_data(LocalCodes **data, char *fname, int skip)
 {
   int rows;
   rows = count_file_rows(fname); //Includes the header rows
-  (*data) = (LocalCodes *) malloc((rows+1-skip) * sizeof(LocalCodes));
+  (*data) = (LocalCodes *) malloc((rows+100-skip) * sizeof(LocalCodes));
   rows = read_csv((*data), fname, skip); // Corrects number of rows
   printf("Rows: %d\n", rows);
   return rows;
 }
 
-int main(int argc, char const *argv[])
+int create_new_files(int argc, char *dest_folder,char *argv[])
 {
-  int i, n, boolRealloc, rows, skip;
+  int i, n, boolNewRow, rows, skip;
   static char buf[1024];
   PatientData p_data;
   LocalCodes *both_codes_data;
@@ -140,7 +132,7 @@ int main(int argc, char const *argv[])
   char ofile_path[60];
   char *ifile_path = (char*)malloc(100*sizeof(char));
 
-  char output_dir[] = "RESULTS";
+  char *output_dir = dest_folder;
   // Depends on csv
   char code_transformation_file[60];
   sprintf(code_transformation_file, "%s/relacion_codigos_sujetos.csv", output_dir);
@@ -148,7 +140,7 @@ int main(int argc, char const *argv[])
 
   rows = init_both_codes_data(&both_codes_data, code_transformation_file, skip);
 
-  for (i=1;i<argc;i++) {
+  for (i=0;i<argc;i++) {
     ifile_path = (char *) realloc(ifile_path, strlen(argv[i])+1);
     strcpy(ifile_path, argv[i]);
 
@@ -159,8 +151,8 @@ int main(int argc, char const *argv[])
     /* -------------------------------------------------- */
 
       // Modify name according to .csv
-    boolRealloc = modify_patient_code(p_data.localCode, both_codes_data, code_transformation_file, rows);
-    if (boolRealloc) {both_codes_data = (LocalCodes *) realloc(both_codes_data, rows+1); rows++;}
+    boolNewRow = modify_patient_code(p_data.localCode, both_codes_data, code_transformation_file, rows);
+    if (boolNewRow) {/*both_codes_data = (LocalCodes *) realloc(both_codes_data, rows+1);*/ rows++;}
 
     modify_patient_bday(p_data.bday); // Modify birthday date to keep year and change day and month
 

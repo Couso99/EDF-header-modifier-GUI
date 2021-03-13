@@ -209,8 +209,16 @@ void process_header(PatientData *p_data, RecordingData *r_data, char* start_date
 {
   if (p_data) str2patientData(p_data,buf+8);
   if (r_data) str2recordingData(r_data,buf+88);
-  if (start_date) strncpy(start_date,buf+168,8);
-  if (start_time) strncpy(start_time,buf+176,8);
+  if (start_date)
+  {
+      strncpy(start_date,buf+168,8);
+      start_date[8] = '\0';
+  }
+  if (start_time)
+  {
+      strncpy(start_time,buf+176,8);
+      start_time[8] = '\0';
+  }
 
   return;
 }
